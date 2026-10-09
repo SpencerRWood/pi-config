@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { after, test } from "node:test";
 import {
   mkdtempSync,
@@ -82,6 +83,96 @@ test("missing or altered permission configuration prevents launch", () => {
   assert.throws(() => verifyInstallation(agentDir), /differ from/);
   rmSync(path);
   assert.throws(() => verifyInstallation(agentDir), /ENOENT/);
+});
+
+test("Story launcher hands the bound worktree to the actual pinned Pi CLI and retains its claim on exit", () => {
+  const agentDir = join(temporary, "story-launch-agent");
+  install(repo, shared, agentDir);
+  const cwd = join(temporary, "target-repository");
+  const worktree = join(temporary, "story-worktree");
+  const bin = join(temporary, "story-bin");
+  for (const path of [cwd, worktree, bin]) mkdirSync(path);
+  const calls = join(temporary, "story-wood-calls.jsonl");
+  const sessionFile = join(temporary, "42.json");
+  const cliObservation = join(temporary, "pi-cli-observation.json");
+  const preload = join(temporary, "observe-cli.mjs");
+  writeFileSync(
+    preload,
+    `import { writeFileSync } from 'node:fs';
+if (process.argv[1] === ${JSON.stringify(join(repo, "node_modules/@earendil-works/pi-coding-agent/dist/cli.js"))})
+  writeFileSync(${JSON.stringify(cliObservation)}, JSON.stringify({cwd:process.cwd(),agentDir:process.env.PI_CODING_AGENT_DIR,args:process.argv.slice(2)}));\n`,
+  );
+  const session = {
+    story_id: 42,
+    owner: "pi-launch-fixture",
+    state: "claimed",
+    worktree,
+    branch: "feature/op-42-launch",
+    next_action: "Implement the Story",
+  };
+  // Exercise the launcher process and real Pi argument parser. Wood transport is
+  // a local executable fixture: no OpenProject mutation, provider call or login.
+  writeFileSync(
+    join(bin, "wood"),
+    `#!${process.execPath}
+import { appendFileSync, writeFileSync } from 'node:fs';
+const args = process.argv.slice(2);
+appendFileSync(${JSON.stringify(calls)}, JSON.stringify({args, cwd: process.cwd()}) + '\\n');
+const session = ${JSON.stringify(session)};
+const data = args[0] === 'contract' ? {capabilities: ['story next', 'story get', 'story start', 'story session get', 'story session checkpoint', 'story session handoff', 'story session release']}
+  : args[1] === 'get' ? {implementation: {goal: 'Launch in the bound worktree', acceptance_criteria: ['Keep the claim on exit']}}
+  : {session, worktree: {path: session.worktree}, session_file: ${JSON.stringify(sessionFile)}};
+if (args.includes('--apply')) writeFileSync(${JSON.stringify(sessionFile)}, JSON.stringify(session));
+process.stdout.write(JSON.stringify({schema_version: 2, status: 'success', summary: 'Fixture', requires_approval: false, data}));
+`,
+    { mode: 0o700 },
+  );
+  const launched = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      join(repo, "node_modules/tsx/dist/loader.mjs"),
+      join(repo, "scripts/pi.ts"),
+      "--agent-dir",
+      agentDir,
+      "--story",
+      "42",
+      "--owner",
+      session.owner,
+      "--worktree",
+      worktree,
+      "--",
+      "--help",
+    ],
+    {
+      cwd,
+      env: {
+        ...process.env,
+        PATH: `${bin}:${process.env.PATH}`,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import="${preload}"`,
+      },
+      encoding: "utf8",
+      timeout: 30_000,
+    },
+  );
+  assert.equal(launched.status, 0, launched.stderr);
+  assert.match(launched.stdout, /--append-system-prompt/);
+  assert.match(launched.stderr, /pi-launch-fixture/);
+  assert.deepEqual(JSON.parse(readFileSync(sessionFile, "utf8")), session);
+  const observed = readFileSync(calls, "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  assert.equal(observed.length, 4);
+  assert.ok(observed.every((call) => call.cwd === realpathSync(cwd)));
+  assert.equal(
+    observed.some((call) => call.args.includes("release")),
+    false,
+  );
+  const actualCli = JSON.parse(readFileSync(cliObservation, "utf8"));
+  assert.equal(actualCli.cwd, realpathSync(worktree));
+  assert.equal(actualCli.agentDir, agentDir);
+  assert.ok(actualCli.args.includes("--append-system-prompt"));
 });
 
 test("telemetry reader rejects malformed, oversized and symlinked inputs", () => {
