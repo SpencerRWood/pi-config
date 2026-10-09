@@ -1,0 +1,4 @@
+package-lock.json
+uv.lock
+.venv/
+node_modules/

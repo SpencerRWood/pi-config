@@ -1,0 +1,11 @@
+node_modules/
+.venv/
+*.tsbuildinfo
+.pi/
+coverage/
+.DS_Store
+.env
+.env.*
+!.env.example
+auth.json
+sessions/

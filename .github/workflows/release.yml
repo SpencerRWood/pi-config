@@ -1,0 +1,12 @@
+name: Release
+
+# Publication is a Release integration gate, never an individual Story side effect.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: SpencerRWood/workflows/.github/workflows/release.yml@v1
