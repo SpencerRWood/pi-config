@@ -3,7 +3,6 @@ import { join, resolve } from "node:path";
 
 export const extensionEntries = [
   "@gotgenes/pi-permission-system/src/index.ts",
-  "@gotgenes/pi-permission-model-judge/src/index.ts",
   "@narumitw/pi-plan-mode/dist/index.ts",
   "@narumitw/pi-lsp/dist/index.ts",
   "pi-subagents/index.js",
@@ -13,6 +12,7 @@ export function createSettings(repo: string, shared: string) {
   return {
     packages: [],
     extensions: [
+      join(repo, "extensions/authorization.ts"),
       ...extensionEntries.map((entry) => join(repo, "node_modules", entry)),
       join(repo, "extensions/footer.ts"),
     ],
@@ -25,7 +25,7 @@ export function createSettings(repo: string, shared: string) {
   };
 }
 
-// Provisional interactive configuration, not #535's automatic release policy.
+// The Wood gate runs first; this package supplies path gates and human fallback.
 export const permissions = {
   permission: {
     "*": "ask",
@@ -38,16 +38,16 @@ export const permissions = {
     bash: { "*": "ask" },
     path: {
       "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*/auth.json": "deny",
-      "~/.ssh/*": "deny",
-      "~/.aws/*": "deny",
+      "*.env": "ask",
+      "*.env.*": "ask",
+      "*/auth.json": "ask",
+      "~/.ssh/*": "ask",
+      "~/.aws/*": "ask",
     },
     external_directory: "ask",
   },
   yoloMode: false,
-  authorizerChain: [],
+  authorizerChain: ["wood-independent-review"],
   debugLog: false,
   permissionReviewLog: false,
 };
