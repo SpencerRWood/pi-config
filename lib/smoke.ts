@@ -36,8 +36,10 @@ export async function smoke(agentDir: string, cwd: string) {
   for (const tool of ["lsp_diagnostics", "lsp_fix", "subagent"])
     assert.ok(tools.has(tool), `Missing tool: ${tool}`);
   assert.ok(
-    loaded.extensions.some((e) => e.path.includes("pi-permission-model-judge")),
-    "Permission reviewer must register successfully",
+    loaded.extensions.some((e) =>
+      e.path.endsWith("extensions/authorization.ts"),
+    ),
+    "Wood authorization extension must register successfully",
   );
   assert.ok(
     loader

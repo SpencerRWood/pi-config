@@ -16,7 +16,6 @@
   "dependencies": {
     "@earendil-works/pi-coding-agent": "1.1.0",
     "@earendil-works/pi-tui": "1.1.0",
-    "@gotgenes/pi-permission-model-judge": "3.0.0",
     "@gotgenes/pi-permission-system": "40.1.2",
     "@narumitw/pi-lsp": "0.49.9",
     "@narumitw/pi-plan-mode": "0.59.2",
