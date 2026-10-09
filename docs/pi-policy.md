@@ -1,0 +1,5 @@
+Use Wood Tools and the shared OpenProject development workflow skill on demand. The canonical global AGENTS.md and skill files are references to codex-config. Read repository guidance before editing; keep full diagnostics locally and return bounded summaries.
+
+Default to local development. Do not publish images, deploy infrastructure, merge, release or modify secrets without the applicable explicit authorization. Stop before commit, push or PR creation for the standard Story review. A permission dialog is not Release readiness approval. The provisional #533 configuration prompts for shell and other sensitive actions; automatic policy enforcement and independent permission-model authorization are assigned to #535.
+
+Delegate only when the user or applicable project instructions explicitly authorize subagents. Use bounded tasks and read-only review where appropriate. No scheduled agent execution. Do not load the complete skill library into context; select relevant skills on demand. Do not use direct OpenProject APIs or invent missing telemetry.
