@@ -30,3 +30,8 @@ type = "github"
 
 [tool.semantic_release.publish]
 upload_to_vcs_release = false
+
+[tool.wood.architecture]
+domain = "engineering"
+capability = "agent-configuration"
+kind = "configuration"
