@@ -1,5 +1,9 @@
 # Pi repository guidance
 
+This configuration repository remains trunk-based. Follow `docs/branching-policy.md`
+in the explicitly installed codex-config source; adoption is progressive and does
+not migrate or block other repositories. Preserve Pi's review and permission gates.
+
 Read the canonical shared engineering policy from the explicit codex-config path configured by `scripts/install.ts`. Do not copy or override it here. Shared skills remain owned by codex-config and load on demand.
 
 - This repository owns Pi settings, extension selection, footer, permissions configuration and session configuration. Codex remains compatible and its installed homes are not modified.
