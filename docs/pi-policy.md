@@ -1,5 +1,16 @@
 Use Wood Tools and the shared OpenProject development workflow skill on demand. The canonical global AGENTS.md and skill files are references to codex-config. Read repository guidance before editing; keep full diagnostics locally and return bounded summaries.
 
+Read `docs/branching-policy.md` through the explicitly installed codex-config
+source path. Verify the adopted strategy, approved release association,
+fetched base and PR target before launching a Story. Adopted applications target their
+active release integration branch; trunk repositories target `main`. Nonadopters
+continue existing conventions; existing work can finish a safe current arrangement
+with explicit approval. Do not migrate repositories while launching unrelated work.
+A launcher or Wood contract that cannot honor an adopted release selection is
+blocked, never permission to fall back to `main`. Record base, target and release
+identifier in evidence. Story integration, release readiness and deployment have
+separate gates; the existing hard publication/deployment denials still apply.
+
 Ordinary Story work stays local. Editing inside the working directory, declared validation commands and unpublished local image builds need no model approval. Publishing images, deploying infrastructure, creating releases, opaque shell syntax, command wrappers and arbitrary custom execution tools are denied by the Wood gate before the permission package, cached approvals or independent reviewer run. A human permission answer cannot override a hard denial. Release integration uses the separately authorized CI/operator path. Stop before commit, push or PR creation for the standard Story review.
 
 Git mutations, destructive filesystem operations, secret access and external paths require explicit human approval for each tool call. Drive operations require human authorization; the connector is owned by #536 and is not installed here. Unattended sensitive actions are blocked. Child and LSP execution tools remain blocked until their authority propagation is verified; package registration alone does not authorize execution.
