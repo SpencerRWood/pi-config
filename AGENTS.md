@@ -1,6 +1,8 @@
 # Pi repository guidance
 
-This configuration repository remains trunk-based. Follow `docs/branching-policy.md`
+This repository currently retains its legacy trunk declaration/claim arrangement;
+the universal target is integration/development after deliberate migration. Do not
+migrate it in BR-01. Follow `docs/branching-policy.md`
 in the explicitly installed codex-config source; adoption is progressive and does
 not migrate or block other repositories. Preserve Pi's review and permission gates.
 

@@ -2,14 +2,30 @@ Use Wood Tools and the shared OpenProject development workflow skill on demand. 
 
 Read `docs/branching-policy.md` through the explicitly installed codex-config
 source path. Verify the adopted strategy, approved release association,
-fetched base and PR target before launching a Story. Adopted applications target their
-active release integration branch; trunk repositories target `main`. Nonadopters
+fetched base and PR target before launching a Story. Root `[tool.wood.branching]`
+selects the integration branch (normally development), the existing approved
+release branch, or trunk/main. Negotiate Wood branching contract version 1 and
+validate the returned start preview before activating a claim. Nonadopters
 continue existing conventions; existing work can finish a safe current arrangement
 with explicit approval. Do not migrate repositories while launching unrelated work.
 A launcher or Wood contract that cannot honor an adopted release selection is
 blocked, never permission to fall back to `main`. Record base, target and release
 identifier in evidence. Story integration, release readiness and deployment have
 separate gates; the existing hard publication/deployment denials still apply.
+
+The universal target for applications, CLI tools, libraries, infrastructure,
+templates and shared tooling is working branch → development → protected main →
+automatic pinned repository release workflow. Type determines outputs, not strategy.
+Legacy declarations and existing claims remain until deliberate migration; BR-01
+does not migrate consumers or alter publishing workflows.
+
+Emergency hotfix is explicitly incident-authorized, never the default: use an
+explicit Story and both `--hotfix-incident` and `--hotfix-approval` evidence
+references. The launcher validates the main/main exception and original integration
+branch before claim activation. Protected-main PR approval and CI still apply;
+there is no direct push or protection bypass. Reconcile main back into development
+through a reviewed PR and retain `wood repo release-readiness --json` revision
+evidence before the next release integration. Unresolved divergence blocks preparation.
 
 Ordinary Story work stays local. Editing inside the working directory, declared validation commands and unpublished local image builds need no model approval. Publishing images, deploying infrastructure, creating releases, opaque shell syntax, command wrappers and arbitrary custom execution tools are denied by the Wood gate before the permission package, cached approvals or independent reviewer run. A human permission answer cannot override a hard denial. Release integration uses the separately authorized CI/operator path. Stop before commit, push or PR creation for the standard Story review.
 

@@ -102,12 +102,21 @@ test("Story launcher hands the bound worktree to the actual pinned Pi CLI and re
 if (process.argv[1] === ${JSON.stringify(join(repo, "node_modules/@earendil-works/pi-coding-agent/dist/cli.js"))})
   writeFileSync(${JSON.stringify(cliObservation)}, JSON.stringify({cwd:process.cwd(),agentDir:process.env.PI_CODING_AGENT_DIR,args:process.argv.slice(2)}));\n`,
   );
+  const branching = {
+    strategy: "trunk",
+    adopted: false,
+    base_branch: "main",
+    target_branch: "main",
+    base_ref: "refs/heads/main",
+    base_revision: "a".repeat(40),
+  };
   const session = {
     story_id: 42,
     owner: "pi-launch-fixture",
     state: "claimed",
     worktree,
     branch: "feature/op-42-launch",
+    branching,
     next_action: "Implement the Story",
   };
   // Exercise the launcher process and real Pi argument parser. Wood transport is
@@ -119,9 +128,10 @@ import { appendFileSync, writeFileSync } from 'node:fs';
 const args = process.argv.slice(2);
 appendFileSync(${JSON.stringify(calls)}, JSON.stringify({args, cwd: process.cwd()}) + '\\n');
 const session = ${JSON.stringify(session)};
-const data = args[0] === 'contract' ? {capabilities: ['story next', 'story get', 'story start', 'story session get', 'story session checkpoint', 'story session handoff', 'story session release']}
+const data = args[0] === 'contract' ? {branching: {version: 1, strategies: ['trunk', 'release', 'integration'], branch_prefixes: ['feature', 'feat', 'fix']}, capabilities: ['story next', 'story get', 'story start', 'story session get', 'story session checkpoint', 'story session handoff', 'story session release', 'repo branching']}
+  : args[1] === 'branching' ? session.branching
   : args[1] === 'get' ? {implementation: {goal: 'Launch in the bound worktree', acceptance_criteria: ['Keep the claim on exit']}}
-  : {session, worktree: {path: session.worktree}, session_file: ${JSON.stringify(sessionFile)}};
+  : {branching: session.branching, session, worktree: {path: session.worktree, branch: session.branch, base_revision: session.branching.base_revision}, session_file: ${JSON.stringify(sessionFile)}};
 if (args.includes('--apply')) writeFileSync(${JSON.stringify(sessionFile)}, JSON.stringify(session));
 process.stdout.write(JSON.stringify({schema_version: 2, status: 'success', summary: 'Fixture', requires_approval: false, data}));
 `,
@@ -163,7 +173,7 @@ process.stdout.write(JSON.stringify({schema_version: 2, status: 'success', summa
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line));
-  assert.equal(observed.length, 4);
+  assert.equal(observed.length, 5);
   assert.ok(observed.every((call) => call.cwd === realpathSync(cwd)));
   assert.equal(
     observed.some((call) => call.args.includes("release")),
