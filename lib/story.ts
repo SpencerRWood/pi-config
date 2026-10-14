@@ -55,11 +55,109 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+const strategies = ["trunk", "release", "integration"];
+const prefixes = ["feature", "feat", "fix"];
+
+function branchingPlan(value: unknown) {
+  const plan = object(value);
+  const hotfix = plan.mode === "hotfix";
+  if (
+    !strategies.includes(String(plan.strategy)) ||
+    typeof plan.adopted !== "boolean" ||
+    typeof plan.base_branch !== "string" ||
+    !plan.base_branch ||
+    (plan.mode !== undefined && !hotfix) ||
+    (hotfix &&
+      (plan.strategy !== "integration" ||
+        plan.base_branch !== "main" ||
+        typeof plan.integration_branch !== "string" ||
+        !plan.integration_branch ||
+        plan.integration_branch === "main" ||
+        [plan.hotfix_incident, plan.hotfix_approval].some(
+          (value) =>
+            typeof value !== "string" || !value.trim() || value.length > 500,
+        ))) ||
+    plan.target_branch !== plan.base_branch ||
+    (plan.strategy === "trunk"
+      ? plan.base_branch !== "main"
+      : plan.adopted !== true ||
+        (!hotfix && plan.base_branch === "main") ||
+        !Number.isSafeInteger(plan.release_id) ||
+        Number(plan.release_id) < 1 ||
+        typeof plan.scope_reference !== "string" ||
+        !plan.scope_reference.trim())
+  )
+    throw new Error(
+      "Wood returned an invalid branching plan before activation",
+    );
+  return plan;
+}
+
+function verifyStart(
+  data: Record<string, unknown>,
+  expected: Record<string, unknown>,
+  id: number,
+  options: StoryOptions,
+) {
+  const plan = branchingPlan(data.branching);
+  const session = object(data.session);
+  const worktree = object(data.worktree);
+  const saved = object(session.branching);
+  const branch = session.branch;
+  const keys = [
+    "strategy",
+    "adopted",
+    "base_branch",
+    "target_branch",
+    "release_id",
+    "scope_reference",
+    "mode",
+    "integration_branch",
+    "hotfix_incident",
+    "hotfix_approval",
+  ];
+  const baseRef =
+    plan.strategy === "trunk"
+      ? "refs/heads/main"
+      : `refs/remotes/origin/${plan.base_branch}`;
+  if (
+    keys.some(
+      (key) => plan[key] !== expected[key] || saved[key] !== plan[key],
+    ) ||
+    plan.base_ref !== baseRef ||
+    typeof plan.base_revision !== "string" ||
+    !/^[0-9a-f]{40,64}$/.test(plan.base_revision) ||
+    saved.base_ref !== plan.base_ref ||
+    saved.base_revision !== plan.base_revision ||
+    (worktree.reused !== true &&
+      worktree.base_revision !== plan.base_revision) ||
+    session.story_id !== id ||
+    session.owner !== options.owner ||
+    session.state !== "claimed" ||
+    worktree.path !== session.worktree ||
+    typeof session.worktree !== "string" ||
+    resolve(session.worktree) !== resolve(options.worktree) ||
+    typeof branch !== "string" ||
+    !prefixes.some((prefix) => branch.startsWith(`${prefix}/op-${id}-`)) ||
+    (options.branchPrefix !== undefined &&
+      !branch.startsWith(`${options.branchPrefix}/op-${id}-`)) ||
+    worktree.branch !== session.branch ||
+    typeof data.session_file !== "string"
+  )
+    throw new Error(
+      "Wood returned a mismatched branching/Story/worktree binding; inspect its local claim",
+    );
+  return { session, plan };
+}
+
 export type StoryOptions = {
   story: string;
   owner: string;
   worktree: string;
   initiative?: string;
+  branchPrefix?: string;
+  hotfixIncident?: string;
+  hotfixApproval?: string;
 };
 
 // Wood owns readiness, Git preparation, claims and transitions. Pi supplies only
@@ -79,7 +177,27 @@ export function prepareStory(
     throw new Error("--story must be next or a positive Story ID");
   if (options.initiative && !/^[1-9][0-9]*$/.test(options.initiative))
     throw new Error("--initiative must be a positive Initiative ID");
-  const capabilities = run(["contract"], cwd).data.capabilities;
+  if (
+    options.branchPrefix !== undefined &&
+    !prefixes.includes(options.branchPrefix)
+  )
+    throw new Error("Choose feature, feat or fix before activation");
+  const hotfix =
+    options.hotfixIncident !== undefined ||
+    options.hotfixApproval !== undefined;
+  if (
+    hotfix &&
+    (options.story === "next" ||
+      [options.hotfixIncident, options.hotfixApproval].some(
+        (value) =>
+          typeof value !== "string" || !value.trim() || value.length > 500,
+      ))
+  )
+    throw new Error(
+      "Hotfix requires an explicit Story, incident and approval references",
+    );
+  const contract = run(["contract"], cwd).data;
+  const capabilities = contract.capabilities;
   if (
     !Array.isArray(capabilities) ||
     ![
@@ -90,11 +208,43 @@ export function prepareStory(
       "story session checkpoint",
       "story session handoff",
       "story session release",
+      "repo branching",
     ].every((command) => capabilities.includes(command))
   )
     throw new Error(
       "Install Wood Tools with Story session/worktree support before launching",
     );
+  const branching = object(contract.branching);
+  const declaredStrategies = branching.strategies;
+  const declaredPrefixes = branching.branch_prefixes;
+  if (
+    branching.version !== 1 ||
+    !Array.isArray(declaredStrategies) ||
+    !strategies.every((name) => declaredStrategies.includes(name)) ||
+    !Array.isArray(declaredPrefixes) ||
+    !prefixes.every((name) => declaredPrefixes.includes(name))
+  )
+    throw new Error("Install Wood Tools with branching contract version 1");
+  const declared = branchingPlan(run(["repo", "branching"], cwd).data);
+  if (
+    hotfix &&
+    (declared.strategy !== "integration" ||
+      object(branching.hotfix).version !== 1)
+  )
+    throw new Error(
+      "Hotfix requires integration strategy and Wood hotfix contract version 1",
+    );
+  const expected = hotfix
+    ? branchingPlan({
+        ...declared,
+        mode: "hotfix",
+        integration_branch: declared.base_branch,
+        base_branch: "main",
+        target_branch: "main",
+        hotfix_incident: options.hotfixIncident,
+        hotfix_approval: options.hotfixApproval,
+      })
+    : declared;
   const id =
     options.story === "next"
       ? object(
@@ -131,32 +281,33 @@ export function prepareStory(
     options.owner,
     "--worktree",
     options.worktree,
+    "--base-branch",
+    String(expected.base_branch),
+    "--target-branch",
+    String(expected.target_branch),
     ...(options.initiative ? ["--initiative", options.initiative] : []),
+    ...(options.branchPrefix ? ["--branch-prefix", options.branchPrefix] : []),
+    ...(hotfix
+      ? [
+          "--hotfix-incident",
+          options.hotfixIncident!,
+          "--hotfix-approval",
+          options.hotfixApproval!,
+        ]
+      : []),
   ];
-  run(args, cwd); // readiness preview; apply rechecks under Wood's shared lock
+  const preview = run(args, cwd).data;
+  verifyStart(preview, expected, id, options);
+  // Wood rechecks live release, mapping and claim state under its lock on apply.
   const started = run([...args, "--apply"], cwd).data;
-  const session = object(started.session);
-  const worktree = object(started.worktree);
-  if (
-    session.story_id !== id ||
-    session.owner !== options.owner ||
-    session.state !== "claimed" ||
-    worktree.path !== session.worktree ||
-    typeof session.worktree !== "string" ||
-    resolve(session.worktree) !== resolve(options.worktree) ||
-    typeof session.branch !== "string" ||
-    !session.branch.startsWith(`feature/op-${id}-`) ||
-    typeof started.session_file !== "string"
-  )
-    throw new Error(
-      "Wood returned a mismatched Story/worktree binding; inspect its local claim",
-    );
+  const { session, plan } = verifyStart(started, expected, id, options);
   return {
     id,
     owner: options.owner,
-    worktree: session.worktree,
-    branch: session.branch,
-    sessionFile: started.session_file,
+    worktree: String(session.worktree),
+    branch: String(session.branch),
+    branching: plan,
+    sessionFile: String(started.session_file),
     goal: implementation.goal,
     acceptanceCriteria: criteria as string[],
     nextAction: session.next_action,
@@ -167,6 +318,12 @@ export function storyPrompt(story: ReturnType<typeof prepareStory>) {
   return [
     `Active Wood Story #${story.id}. Owner: ${story.owner}. Branch: ${story.branch}.`,
     `Working directory: ${story.worktree}. Durable session: ${story.sessionFile}.`,
+    `Strategy: ${story.branching.strategy}. Base: ${story.branching.base_branch}. PR target: ${story.branching.target_branch}. Planning release: ${story.branching.release_id ?? "not branch-mapped (trunk)"}.`,
+    ...(story.branching.mode === "hotfix"
+      ? [
+          `Emergency hotfix. Incident: ${story.branching.hotfix_incident}. Approval reference: ${story.branching.hotfix_approval}. Protected-main PR and CI remain required. Reconcile main into ${story.branching.integration_branch} and verify wood repo release-readiness before subsequent release integration.`,
+        ]
+      : []),
     `Goal: ${story.goal}`,
     `Acceptance criteria: ${JSON.stringify(story.acceptanceCriteria)}`,
     "Read the shared openproject-development-workflow skill before implementation.",

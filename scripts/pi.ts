@@ -17,13 +17,24 @@ const { values } = parseArgs({
     owner: { type: "string" },
     worktree: { type: "string" },
     initiative: { type: "string" },
+    "branch-prefix": { type: "string" },
+    "hotfix-incident": { type: "string" },
+    "hotfix-approval": { type: "string" },
   },
 });
 if (!values["agent-dir"])
   throw new Error("Required: --agent-dir PATH [-- PI_ARGS]");
 const { repo } = verifyInstallation(values["agent-dir"]);
-if (!values.story && (values.owner || values.worktree || values.initiative))
-  throw new Error("--owner, --worktree and --initiative require --story");
+if (
+  !values.story &&
+  (values.owner ||
+    values.worktree ||
+    values.initiative ||
+    values["branch-prefix"] ||
+    values["hotfix-incident"] ||
+    values["hotfix-approval"])
+)
+  throw new Error("Story selectors require --story");
 if (values.story && (!values.owner || !values.worktree))
   throw new Error("Story launch requires --owner and --worktree");
 const story = values.story
@@ -33,6 +44,9 @@ const story = values.story
         owner: values.owner!,
         worktree: values.worktree!,
         initiative: values.initiative,
+        branchPrefix: values["branch-prefix"],
+        hotfixIncident: values["hotfix-incident"],
+        hotfixApproval: values["hotfix-approval"],
       },
       process.cwd(),
     )
