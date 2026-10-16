@@ -6,10 +6,10 @@
     {
       "release":
         {
-          "uses": "SpencerRWood/workflows/.github/workflows/release.yml@1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7",
+          "uses": "SpencerRWood/workflows/.github/workflows/release.yml@613bb7d915cec854b5f7f2b5d26e963c8a4ada3f",
           "if": "github.ref == 'refs/heads/main' && (true)",
           "with":
-            { "workflow_revision": "1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7" },
+            { "workflow_revision": "613bb7d915cec854b5f7f2b5d26e963c8a4ada3f" },
         },
     },
 }
