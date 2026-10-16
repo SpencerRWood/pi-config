@@ -1,12 +1,15 @@
-name: Release
-
-# Publication is a Release integration gate, never an individual Story side effect.
-on:
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  release:
-    uses: SpencerRWood/workflows/.github/workflows/release.yml@v1
+{
+  "name": "Release",
+  "on": { "workflow_dispatch": null, "push": { "branches": ["main"] } },
+  "permissions": { "contents": "write" },
+  "jobs":
+    {
+      "release":
+        {
+          "uses": "SpencerRWood/workflows/.github/workflows/release.yml@1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7",
+          "if": "github.ref == 'refs/heads/main' && (true)",
+          "with":
+            { "workflow_revision": "1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7" },
+        },
+    },
+}

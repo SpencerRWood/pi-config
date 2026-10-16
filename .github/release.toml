@@ -1,15 +1,16 @@
-version = 1
+"version" = 1
 
-[python]
-version = "3.14"
+["python"]
+"version" = "3.14"
 
-[validation]
-checks = ["pre-commit"]
+["validation"]
+"checks" = ["pre-commit"]
 
-[node]
-directory = "."
-version = "24"
-checks = ["lint", "typecheck", "test"]
+["node"]
+"directory" = "."
+"version" = "24"
+"checks" = ["lint", "typecheck", "test"]
 
-[release]
-semantic_release = true
+["release"]
+"semantic_release" = true
+"tag_merged_commit" = true

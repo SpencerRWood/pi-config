@@ -1,37 +1,47 @@
-[project]
-name = "wood-pi-config"
-version = "0.0.1"
-description = "Repository tooling for the Wood Pi configuration"
-requires-python = ">=3.14"
-dependencies = []
+["project"]
+"name" = "wood-pi-config"
+"version" = "0.0.1"
+"description" = "Repository tooling for the Wood Pi configuration"
+"requires-python" = ">=3.14"
+"dependencies" = []
 
-[tool.uv]
-package = false
+["tool"]
 
-[dependency-groups]
-dev = ["pre-commit==4.3.0", "python-semantic-release==10.4.1"]
+["tool"."uv"]
+"package" = false
 
-[tool.wood.openproject]
-project_id = 3
-initiative_id = 531
-release_id = 24
-epic_id = 532
+["tool"."wood"]
 
-[tool.semantic_release]
-commit_parser = "conventional"
-allow_zero_version = true
-tag_format = "v{version}"
-version_toml = ["pyproject.toml:project.version"]
-version_variables = []
-build_command = ""
+["tool"."wood"."openproject"]
+"project_id" = 3
+"initiative_id" = 531
+"release_id" = 24
+"epic_id" = 532
 
-[tool.semantic_release.remote]
-type = "github"
+["tool"."wood"."architecture"]
+"domain" = "engineering"
+"capability" = "agent-configuration"
+"kind" = "configuration"
 
-[tool.semantic_release.publish]
-upload_to_vcs_release = false
+["tool"."wood"."branching"]
+"strategy" = "integration"
+"release_id" = 24
+"integration_branch" = "development"
+"scope_reference" = "https://projects.woodhost.cloud/work_packages/558 activity 1481; canonical fleet migration authorized 2026-10-15; protected-main merges remain separately approved."
 
-[tool.wood.architecture]
-domain = "engineering"
-capability = "agent-configuration"
-kind = "configuration"
+["tool"."semantic_release"]
+"commit_parser" = "conventional"
+"allow_zero_version" = true
+"tag_format" = "v{version}"
+"version_toml" = ["pyproject.toml:project.version"]
+"version_variables" = []
+"build_command" = ""
+
+["tool"."semantic_release"."remote"]
+"type" = "github"
+
+["tool"."semantic_release"."publish"]
+"upload_to_vcs_release" = false
+
+["dependency-groups"]
+"dev" = ["pre-commit==4.3.0", "python-semantic-release==10.4.1"]
