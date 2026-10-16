@@ -11,9 +11,9 @@
     {
       "validation":
         {
-          "uses": "SpencerRWood/workflows/.github/workflows/validate.yml@1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7",
+          "uses": "SpencerRWood/workflows/.github/workflows/validate.yml@613bb7d915cec854b5f7f2b5d26e963c8a4ada3f",
           "with":
-            { "workflow_revision": "1b806a4ebce73dcab2f0ecf26ffc47b00fac8ef7" },
+            { "workflow_revision": "613bb7d915cec854b5f7f2b5d26e963c8a4ada3f" },
           "secrets":
             {
               "dbt_host": "${{ secrets.DBT_HOST }}",
