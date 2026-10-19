@@ -14,6 +14,7 @@ export function createSettings(repo: string, shared: string) {
     extensions: [
       join(repo, "extensions/authorization.ts"),
       ...extensionEntries.map((entry) => join(repo, "node_modules", entry)),
+      join(repo, "extensions/google-drive.ts"),
       join(repo, "extensions/footer.ts"),
     ],
     skills: [join(shared, "skills")],
@@ -35,6 +36,12 @@ export const permissions = {
     ls: "allow",
     edit: "allow",
     write: "allow",
+    google_drive_search: "allow",
+    google_drive_get: "allow",
+    google_drive_create: "allow",
+    google_drive_upload: "allow",
+    google_drive_update: "allow",
+    google_drive_update_document: "allow",
     bash: { "*": "ask" },
     path: {
       "*": "allow",

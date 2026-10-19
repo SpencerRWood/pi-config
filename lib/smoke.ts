@@ -33,7 +33,17 @@ export async function smoke(agentDir: string, cwd: string) {
     "wood-footer-refresh",
   ])
     assert.ok(commands.has(command), `Missing command: ${command}`);
-  for (const tool of ["lsp_diagnostics", "lsp_fix", "subagent"])
+  for (const tool of [
+    "lsp_diagnostics",
+    "lsp_fix",
+    "subagent",
+    "google_drive_search",
+    "google_drive_get",
+    "google_drive_create",
+    "google_drive_upload",
+    "google_drive_update",
+    "google_drive_update_document",
+  ])
     assert.ok(tools.has(tool), `Missing tool: ${tool}`);
   assert.ok(
     loaded.extensions.some((e) =>
@@ -60,7 +70,17 @@ export async function smoke(agentDir: string, cwd: string) {
   return {
     extensions: loaded.extensions.length,
     commands: ["plan", "lsp", "permission-system", "wood-footer-refresh"],
-    tools: ["lsp_diagnostics", "lsp_fix", "subagent"],
+    tools: [
+      "lsp_diagnostics",
+      "lsp_fix",
+      "subagent",
+      "google_drive_search",
+      "google_drive_get",
+      "google_drive_create",
+      "google_drive_upload",
+      "google_drive_update",
+      "google_drive_update_document",
+    ],
     sharedSkills: loader.getSkills().skills.length,
     modelCalls: 0,
     scope:

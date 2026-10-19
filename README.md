@@ -29,6 +29,12 @@ The current #535 rollout is MacBook-only. Independent CI/infrastructure controls
 
 The [footer contract](docs/footer.md) provides two compact lines for repository/branch/Story/mode/model/context and quota/local checks/CI/Release/deployment observations. The footer does not call providers, poll CI, run tests or modify OpenProject. Missing telemetry is `unavailable`; expired or mismatched evidence is `stale`.
 
+Google Drive tools use separate read-only and per-file write OAuth grants stored
+in Infisical. Configure approved Projects, Templates and Architecture folder IDs
+in the private runtime directory before use. See [Google Drive setup, operations
+and recovery](docs/google-drive.md). Read, create, update and upload are supported;
+deletion and sharing require a separately authorized external workflow.
+
 Run full validation with:
 
 ```sh
