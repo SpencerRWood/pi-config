@@ -29,6 +29,8 @@ The current #535 rollout is MacBook-only. Independent CI/infrastructure controls
 
 The [footer contract](docs/footer.md) provides two compact lines for repository/branch/Story/mode/model/context and quota/local checks/CI/Release/deployment observations. The footer does not call providers, poll CI, run tests or modify OpenProject. Missing telemetry is `unavailable`; expired or mismatched evidence is `stale`.
 
+The [usage extension](docs/usage.md) records main-agent, subagent and independent reviewer usage separately in the private Pi home. `/wood-usage-report` and `scripts/usage-report.ts` produce Story rollups with pricing provenance, known subtotals and explicit unknown costs. The footer adds current-session token/cost figures from the same saved observations. Missing provider quotas remain unavailable.
+
 Story launches also register deterministic milestone reporting through Wood Tools.
 Recognized validation and PR/review/merge/CI observations trigger one report without
 model inference or polling; `/wood-report` handles explicit reporting and retained

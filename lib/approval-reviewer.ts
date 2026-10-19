@@ -2,8 +2,14 @@ import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { AuthorizerVerdict } from "@gotgenes/pi-permission-system";
 import { shellPolicy, shellWords } from "./authorization.ts";
 import type { AuditRecord } from "./authorization-audit.ts";
+import { randomUUID } from "node:crypto";
+import { observedUsage, usageRow, type UsageRow } from "./usage.ts";
 
-export type ReviewResult = { verdict: AuthorizerVerdict; audit: AuditRecord };
+export type ReviewResult = {
+  verdict: AuthorizerVerdict;
+  audit: AuditRecord;
+  usage?: UsageRow;
+};
 type Response = Awaited<
   ReturnType<ExtensionContext["modelRegistry"]["complete"]>
 >;
@@ -81,15 +87,21 @@ export async function reviewCommand(
       }),
     ]);
     const usage = response.usage;
-    const safe = (value: number) =>
-      Number.isFinite(value) && value >= 0 ? value : 0;
+    const observed = usageRow(
+      randomUUID(),
+      "reviewer",
+      model.provider,
+      model.id,
+      observedUsage(usage, response.stopReason),
+      model.cost,
+    );
     const record = {
       ...base,
       reviewerCalls: 1,
-      inputTokens: safe(usage.input),
-      outputTokens: safe(usage.output),
-      totalTokens: safe(usage.totalTokens),
-      cost: safe(usage.cost.total),
+      inputTokens: observed.input ?? undefined,
+      outputTokens: observed.output ?? undefined,
+      totalTokens: observed.totalTokens ?? undefined,
+      cost: observed.costUsd ?? undefined,
     };
     const text = response.content
       .filter((c) => c.type === "text")
@@ -101,6 +113,7 @@ export async function reviewCommand(
       text.length > 256
     )
       return {
+        usage: observed,
         verdict: { kind: "defer" },
         audit: {
           ...record,
@@ -113,6 +126,7 @@ export async function reviewCommand(
       parsed = JSON.parse(text);
     } catch {
       return {
+        usage: observed,
         verdict: { kind: "defer" },
         audit: {
           ...record,
@@ -127,6 +141,7 @@ export async function reviewCommand(
       Object.keys(parsed).join() !== "decision"
     )
       return {
+        usage: observed,
         verdict: { kind: "defer" },
         audit: {
           ...record,
@@ -137,6 +152,7 @@ export async function reviewCommand(
     const kind = (parsed as { decision?: unknown }).decision;
     if (kind !== "allow" && kind !== "deny" && kind !== "defer")
       return {
+        usage: observed,
         verdict: { kind: "defer" },
         audit: {
           ...record,
@@ -145,6 +161,7 @@ export async function reviewCommand(
         },
       };
     return {
+      usage: observed,
       verdict:
         kind === "deny"
           ? { kind, reason: "Independent reviewer denied diagnostic" }
@@ -152,7 +169,10 @@ export async function reviewCommand(
       audit: { ...record, result: kind, reason: "independent-review" },
     };
   } catch {
-    return defer("reviewer-failed", 1);
+    return {
+      ...defer("reviewer-failed", 1),
+      usage: usageRow(randomUUID(), "reviewer", model.provider, model.id, {}),
+    };
   } finally {
     if (timer) clearTimeout(timer);
     controller.abort();
