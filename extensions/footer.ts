@@ -4,6 +4,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { renderFooter } from "../lib/footer.ts";
 import { readSnapshot, repositoryIdentity } from "../lib/telemetry.ts";
+import { liveUsage } from "../lib/usage-display.ts";
 
 export default function footer(pi: ExtensionAPI) {
   let identity: ReturnType<typeof repositoryIdentity>;
@@ -45,6 +46,7 @@ export default function footer(pi: ExtensionAPI) {
                   ? "plan"
                   : ctx.mode,
               contextPercent: ctx.getContextUsage()?.percent ?? null,
+              usage: liveUsage(ctx.sessionManager?.getSessionId()),
             },
             snapshot,
             width,

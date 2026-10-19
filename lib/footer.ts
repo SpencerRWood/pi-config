@@ -31,6 +31,7 @@ export interface Identity {
   provider: string;
   mode: string;
   contextPercent: number | null;
+  usage?: { tokens: string; cost: string };
 }
 
 const states: State[] = [
@@ -159,7 +160,8 @@ export function renderFooter(
         : s;
   };
   const story =
-    /^feature\/op-(\d+)(?:-|$)/.exec(identity.branch)?.[1] ?? "unbound";
+    /^(?:feature|feat|fix)\/op-(\d+)(?:-|$)/.exec(identity.branch)?.[1] ??
+    "unbound";
   const context =
     identity.contextPercent === null ||
     !Number.isFinite(identity.contextPercent) ||
@@ -176,6 +178,12 @@ export function renderFooter(
         ["mode", identity.mode],
         ["model", identity.model],
         ["ctx", context],
+        ...(identity.usage
+          ? ([
+              ["tok", identity.usage.tokens],
+              ["cost", identity.usage.cost],
+            ] as [string, string][])
+          : []),
       ],
       width,
     ),

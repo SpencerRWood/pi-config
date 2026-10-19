@@ -32,6 +32,7 @@ export async function smoke(agentDir: string, cwd: string) {
     "permission-system",
     "wood-footer-refresh",
     "wood-report",
+    "wood-usage-report",
   ])
     assert.ok(commands.has(command), `Missing command: ${command}`);
   for (const tool of [

@@ -13,6 +13,7 @@ export function createSettings(repo: string, shared: string) {
     packages: [],
     extensions: [
       join(repo, "extensions/authorization.ts"),
+      join(repo, "extensions/usage.ts"),
       ...extensionEntries.map((entry) => join(repo, "node_modules", entry)),
       join(repo, "extensions/google-drive.ts"),
       join(repo, "extensions/milestones.ts"),

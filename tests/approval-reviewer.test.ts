@@ -17,7 +17,11 @@ function fixture(text: string, stopReason = "stop") {
   const ctx = {
     model: { provider: "coding", id: "implementer" },
     modelRegistry: {
-      find: () => ({ provider: "review", id: "reviewer" }),
+      find: () => ({
+        provider: "review",
+        id: "reviewer",
+        cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0 },
+      }),
       hasConfiguredAuth: () => true,
       streamSimple: (_model: unknown, context: unknown, options: unknown) => {
         calls++;
@@ -133,6 +137,8 @@ test("provider exception and a provider ignoring abort are bounded and defer wit
     },
   });
   assert.equal(failed.verdict.kind, "defer");
+  assert.equal(failed.usage?.costUsd, null);
+  assert.equal(failed.usage?.totalTokens, null);
   assert.doesNotMatch(JSON.stringify(failed), /never-log-this/);
   let signal: AbortSignal | undefined;
   const timed = await reviewCommand("gh pr view 1", f.ctx, {
@@ -145,4 +151,26 @@ test("provider exception and a provider ignoring abort are bounded and defer wit
   });
   assert.equal(timed.verdict.kind, "defer");
   assert.equal(signal?.aborted, true);
+});
+
+test("missing provider usage or zero registry prices never become a free review", async () => {
+  const f = fixture('{"decision":"allow"}');
+  f.ctx.modelRegistry.find = () =>
+    ({
+      provider: "review",
+      id: "reviewer",
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    }) as NonNullable<ReturnType<ExtensionContext["modelRegistry"]["find"]>>;
+  const result = await reviewCommand("gh pr view 1", f.ctx, selectors);
+  assert.equal(result.usage?.reportedCostUsd, 0.001);
+  assert.equal(result.usage?.costUsd, null);
+  assert.equal(result.audit.cost, undefined);
+  const missing = await reviewCommand("gh pr view 1", f.ctx, {
+    ...selectors,
+    request: async () =>
+      ({ ...f.response, usage: undefined }) as unknown as Response,
+  });
+  assert.equal(missing.usage?.totalTokens, null);
+  assert.equal(missing.usage?.costUsd, null);
+  assert.equal(missing.audit.totalTokens, undefined);
 });

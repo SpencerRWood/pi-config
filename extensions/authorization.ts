@@ -13,6 +13,7 @@ import {
 import { toolPolicy, shellPolicy } from "../lib/authorization.ts";
 import { audit } from "../lib/authorization-audit.ts";
 import { reviewCommand } from "../lib/approval-reviewer.ts";
+import { USAGE_EVENT } from "../lib/usage.ts";
 
 export default function authorization(pi: ExtensionAPI) {
   let context: ExtensionContext | undefined;
@@ -47,6 +48,11 @@ export default function authorization(pi: ExtensionAPI) {
     if (policy.kind === "allow") return { kind: "allow" };
     if (policy.kind !== "review") return { kind: "defer" };
     const reviewed = await reviewCommand(details.command, context);
+    if (reviewed.usage)
+      pi.events.emit(USAGE_EVENT, {
+        session: context.sessionManager.getSessionId(),
+        row: reviewed.usage,
+      });
     if (!record(reviewed.audit))
       return {
         kind: "deny",
