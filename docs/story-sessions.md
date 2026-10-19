@@ -43,4 +43,37 @@ Activation persists the claim before Git or remote status mutations. If either f
 
 Keep the standard approval boundary before committing, pushing or creating a PR. Add `--owner <owner>` to Wood status, block, complete and activity writes while the claim is active. Closure continues to require Wood's validation/CI evidence and verified OpenProject activity; a session checkpoint never substitutes for completion evidence. Keep the worktree through delivery. After execution stops and evidence/handoff is retained, preview and apply `wood story session release <id> --owner <owner> --json` with `--apply` on the second call. Release retains the worktree and record references; it does not close the Story or delete branches.
 
-No scheduled runs, automatic permission policy, Drive integration, milestone telemetry, cost attribution, publication or deployment is implemented by this Story.
+## Milestone reporting
+
+Story launches bind the reporting extension to the launched Story and owner. It
+negotiates Wood milestone contract version 1, then previews/applies a start report.
+Successful direct `wood repo validate` JSON results and `gh pr create`, `review`,
+`merge`, `view` or `checks` calls with an identifiable PR trigger one fresh Wood
+report. Nested subagent calls are excluded. These outputs are triggers only: Wood
+rechecks the claim, validation fingerprint/logs, repository, PR revision and remote
+authorities. Commands with unsupported shell shapes or ambiguous PR output need
+an explicit report. There is no polling, extra inference or model-message injection.
+
+Use `/wood-report` to report start/newly collected events,
+`/wood-report {"validation":"/absolute/path/validation.json","pr":77}` after a
+delivery change, or `/wood-report retry` for retained pending events. An optional
+`readiness` path reports a saved readiness observation against its cached refs.
+An actual human approval can be recorded explicitly using `reviewReference` and
+`reviewedRevision` together with `pr`; Wood labels it operator-attested and cannot
+verify the reference itself. Do not supply approval before the human reviews the
+exact source revision. GitHub change requests still block it.
+
+The extension calls only `wood story milestones`; Wood owns event generation,
+the private durable outbox, duplicate reconciliation and posting. An unavailable
+old Wood contract is reported directly; upgrade Wood before reporting instead of
+using a second activity client. A pending report does not cancel the original
+tool operation or release its claim. Inspect the returned Wood outbox and retained
+records; UI status is not validation or delivery evidence. Ordinary launches
+without `--story` do not automatically report. Existing installations need review
+and a clean new agent directory to adopt the added extension; preserved runtimes
+are not overwritten by source changes.
+
+Story completion remains separate from release/deployment. Reporting snapshots
+retain missing/non-applicable release, artifact, deployment, rollback and runtime
+verification states. No scheduled runs, cost attribution, publication or deployment
+is introduced by milestone reporting.

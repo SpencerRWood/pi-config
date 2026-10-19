@@ -332,6 +332,7 @@ export function storyPrompt(story: ReturnType<typeof prepareStory>) {
     "Checkpoint with wood story session checkpoint using --owner, --phase, --next-action and saved --record paths; preview before --apply.",
     `Generate a cross-agent recovery artifact with wood story session handoff ${story.id} --json, then --apply.`,
     "Saved paths are references, not passed validation. Retain Wood validation/evidence records through delivery.",
+    "Wood milestone reporting uses no model calls. After validation, PR creation, review/merge or CI changes, report once with wood story milestones <id> --owner <owner> --validation <saved-file> --pr <number> --json, inspect the preview, then --apply. Omit selectors whose evidence is unavailable. Retain pending events and retry with --retry --apply; do not reconstruct activity comments.",
     "Stop before commit/push/PR creation for review. Keep the claim on exit; resume with the same owner and worktree.",
     "Release the claim explicitly only after the current execution stops and its handoff/evidence is retained.",
   ].join("\n");

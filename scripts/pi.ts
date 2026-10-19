@@ -70,7 +70,12 @@ const child = spawn(
   {
     stdio: "inherit",
     cwd: story?.worktree ?? process.cwd(),
-    env: { ...process.env, PI_CODING_AGENT_DIR: values["agent-dir"] },
+    env: {
+      ...process.env,
+      PI_CODING_AGENT_DIR: values["agent-dir"],
+      WOOD_PI_STORY_ID: story ? String(story.id) : "",
+      WOOD_PI_STORY_OWNER: story?.owner ?? "",
+    },
   },
 );
 child.on("error", () => {
