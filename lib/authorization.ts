@@ -211,6 +211,19 @@ export function toolPolicy(
   if (tool === "bash") return shellPolicy(input.command);
   if (["read", "edit", "write", "find", "grep", "ls"].includes(tool))
     return filePolicy(input.path ?? ".", cwd, agentDir);
+  // These exact repository-owned tools enforce private approved-folder policy
+  // internally. Credentials and policy cannot be supplied in model arguments.
+  if (
+    [
+      "google_drive_search",
+      "google_drive_get",
+      "google_drive_create",
+      "google_drive_upload",
+      "google_drive_update",
+      "google_drive_update_document",
+    ].includes(tool)
+  )
+    return decision("allow", "scoped-drive-operation");
   if (
     /google_drive.*(?:create|update|delete|copy|move|share|permission|comment|batch)/i.test(
       tool,
