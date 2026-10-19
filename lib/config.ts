@@ -15,6 +15,7 @@ export function createSettings(repo: string, shared: string) {
       join(repo, "extensions/authorization.ts"),
       ...extensionEntries.map((entry) => join(repo, "node_modules", entry)),
       join(repo, "extensions/google-drive.ts"),
+      join(repo, "extensions/milestones.ts"),
       join(repo, "extensions/footer.ts"),
     ],
     skills: [join(shared, "skills")],

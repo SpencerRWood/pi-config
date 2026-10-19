@@ -29,6 +29,14 @@ The current #535 rollout is MacBook-only. Independent CI/infrastructure controls
 
 The [footer contract](docs/footer.md) provides two compact lines for repository/branch/Story/mode/model/context and quota/local checks/CI/Release/deployment observations. The footer does not call providers, poll CI, run tests or modify OpenProject. Missing telemetry is `unavailable`; expired or mismatched evidence is `stale`.
 
+Story launches also register deterministic milestone reporting through Wood Tools.
+Recognized validation and PR/review/merge/CI observations trigger one report without
+model inference or polling; `/wood-report` handles explicit reporting and retained
+retries. Wood owns the private outbox, duplicate reconciliation and OpenProject
+activities. Reporting requires Wood milestone contract version 1. See
+[Story sessions](docs/story-sessions.md#milestone-reporting) for event boundaries,
+approval evidence and limitations.
+
 Google Drive tools use separate read-only and per-file write OAuth grants stored
 in Infisical. Configure approved Projects, Templates and Architecture folder IDs
 in the private runtime directory before use. See [Google Drive setup, operations
